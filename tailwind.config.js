@@ -1,0 +1,41 @@
+module.exports = {
+  content: ['./App.tsx', './screens/**/*.{tsx,jsx}', './components/**/*.{tsx,jsx}'],
+  theme: {
+    extend: {
+      colors: {
+        light: {
+          text: '#11181C',
+          background: '#F5F5F5',
+          tint: '#007AFF',
+          card: '#FFFFFF',
+          tabIconDefault: '#687076',
+          tabIconSelected: '#007AFF',
+          paw: '#4A90E2',
+          alertCircle: '#FF6B6B',
+          search: '#45B7D1',
+          heart: '#FF3B30',
+          cart: '#FFCA28',
+          shareSocial: '#6B7280',
+          camera: '#9B59B6',
+        },
+        dark: {
+          text: '#ECEDEE',
+          background: '#151718',
+          tint: '#0A7AFF',
+          card: '#1C2526',
+          tabIconDefault: '#9BA1A6',
+          tabIconSelected: '#0A7AFF',
+          paw: '#6AB0FF',
+          alertCircle: '#FF8787',
+          search: '#6CC9E6',
+          heart: '#FF5C57',
+          cart: '#FFD740',
+          shareSocial: '#9CA3AF',
+          camera: '#BB77D6',
+          book: '#FFB74D',
+        },
+      },
+    },
+  },
+  plugins: [],
+};
