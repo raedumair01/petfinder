@@ -30,7 +30,7 @@ export default function LoginScreen({ users = [], setUser }) {
 
     // setUser(user);
     Alert.alert('Success', 'Logged in successfully!');
-    // navigation.navigate('Profile');
+     navigation.navigate('Profile');
 
     setEmail('');
     setPassword('');
