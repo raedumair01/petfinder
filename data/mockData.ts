@@ -86,3 +86,17 @@ export const mockFoundPets = [
     description: "Black lab mix, found wandering near the beach, no collar."
   }
 ];
+// ../data/mockData.js
+export const mockAdoptionPets = [
+  {
+    id: 1,
+    userId: 1,
+    name: 'Buddy',
+    type: 'Dog',
+    breed: 'Labrador',
+    age: 3,
+    description: 'Friendly and playful',
+    image: 'https://images.unsplash.com/photo-1561037404-61cd46aa615b',
+    adoptionStatus: 'available',
+  },
+];

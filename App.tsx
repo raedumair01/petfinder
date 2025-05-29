@@ -7,6 +7,11 @@ import SignupScreen from './screens/Signup';
 import ProfileScreen from './screens/Profile';
 import LostFoundScreen from './screens/LostFoundScreen';
 import LostPetForm from './screens/LostPetForm';
+import PetAdoptionForm from './screens/PetAdoptionForm';
+import AdoptionListScreen from './screens/AdoptionListScreen';
+import AdoptionProcedureScreen from './screens/AdoptionProcedureScreen';
+import EducationalResourcesScreen from './screens/EducationalResourcesScreen';
+import HomeScreen from './screens/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +24,14 @@ function App(): React.JSX.Element {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="LostFound" component={LostFoundScreen} />
         <Stack.Screen name="LostForm" component={LostPetForm} />
+        <Stack.Screen name="PetAdoptform" component={PetAdoptionForm} />
+        <Stack.Screen name="adoptlist" component={AdoptionListScreen} />
+        <Stack.Screen name="adoptpro" component={AdoptionProcedureScreen} />
+        <Stack.Screen name="education" component={EducationalResourcesScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+
+
+
 
 
       </Stack.Navigator>

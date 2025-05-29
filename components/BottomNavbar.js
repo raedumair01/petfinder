@@ -41,10 +41,17 @@ export default function BottomNavbar({ setUser }) {
       screen: 'PetStore' 
     },
     { 
+      name: 'Education', 
+      svg: 'M5 3H19C20.1 3 21 3.9 21 5V17C21 18.1 20.1 19 19 19H5C3.9 19 3 18.1 3 17V5C3 3.9 3.9 3 5 3ZM5 5V17H19V5H5ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H13V17H7V15Z',
+      viewBox: '0 0 24 24',
+      screen: 'education' 
+    },
+    { 
       name: 'Profile', 
       svg: 'M12 2C9.24 2 7 4.24 7 7C7 9.76 9.24 12 12 12C14.76 12 17 9.76 17 7C17 4.24 14.76 2 12 2ZM12 14C8.34 14 5 15.34 5 17V19H19V17C19 15.34 15.66 14 12 14Z',
       screen: 'Profile' ,
     },
+ 
     
   ];
 

@@ -137,7 +137,7 @@ export default function ProfileScreen({ user: propUser, setUser: propSetUser }) 
           />
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#52C41A' }]}
-            onPress={() => navigation.navigate('PetAdoptionForm')}
+            onPress={() => navigation.navigate('PetAdoptform')}
           >
             <Text style={styles.buttonText}>List a Pet for Adoption</Text>
           </TouchableOpacity>
