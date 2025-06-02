@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SignupScreen({ users = [], setUsers, setUser }) {
@@ -10,42 +10,23 @@ export default function SignupScreen({ users = [], setUsers, setUser }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone) => {
-    const phoneRegex = /^070\d{8}$/;
-    return phoneRegex.test(phone);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePhone = (phone) => /^070\d{8}$/.test(phone);
 
   const handleSignup = () => {
     if (!fullName || !email || !phoneNumber || !password || !confirmPassword) {
-      Alert.alert('Error', 'All fields are required');
-      return;
+      return Alert.alert('Error', 'All fields are required');
     }
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
+      return Alert.alert('Error', 'Please enter a valid email address');
     }
     if (!validatePhone(phoneNumber)) {
-      Alert.alert('Error', 'Phone number must start with 070 and be 11 digits');
-      return;
+      return Alert.alert('Error', 'Phone number must start with 070 and be 11 digits');
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+      return Alert.alert('Error', 'Passwords do not match');
     }
-    // Commented out email uniqueness check to simplify
-    // if (users.some((u) => u.email === email)) {
-    //   Alert.alert('Error', 'Email already registered');
-    //   return;
-    // }
 
-    // const newUser = { id: users.length + 1, email, password, fullName, phoneNumber };
-    // setUsers([...users, newUser]);
-    // setUser(newUser);
     Alert.alert('Success', 'Account created!');
     navigation.navigate('Profile');
 
@@ -57,87 +38,73 @@ export default function SignupScreen({ users = [], setUsers, setUser }) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Sign up</Text>
-        <Text style={styles.subtitle}></Text>
-      </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Sign up</Text>
+      <Text style={styles.subtitle}></Text>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Sayo Adebayo"
-          value={fullName}
-          onChangeText={setFullName}
-        />
+      <Text style={styles.label}>Full Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Sayo Adebayo"
+        value={fullName}
+        onChangeText={setFullName}
+      />
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="aacsedoelkeOgmiek.com"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-        />
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="aacsedoelkeOgmiek.com"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+      />
 
-        <Text style={styles.label}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="070*******"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
+      <Text style={styles.label}>Phone Number</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="070*******"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+      />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+      <Text style={styles.label}>Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
 
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
-      </View>
+      <Text style={styles.label}>Confirm Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+      />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign up</Text>
-        </TouchableOpacity>
-        <View style={styles.loginLinkContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginText}>Already have an Account? Log in</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Sign up</Text>
+      </TouchableOpacity>
 
-      <View style={styles.socialContainer}></View>
-    </View>
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.loginText}>Already have an Account? Log in</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#FFFBFA',
     padding: 20,
+    backgroundColor: '#FFFBFA',
     borderWidth: 5,
     borderColor: '#B85B2F',
     borderRadius: 32,
-    height: '100%',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
+    flexGrow: 1,
   },
   title: {
     paddingTop: 50,
@@ -145,14 +112,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#2B3334',
     marginBottom: 5,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 12,
     color: '#485456',
     textAlign: 'center',
-  },
-  form: {
-    flex: 1,
+    marginBottom: 20,
   },
   label: {
     fontSize: 12,
@@ -168,11 +134,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 15,
     fontSize: 14,
-    color: '#C7CCCC',
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginBottom: 150,
+    color: '#2B3334',
   },
   button: {
     width: '100%',
@@ -181,21 +143,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   buttonText: {
     fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  loginLinkContainer: {
-    alignItems: 'center',
-  },
   loginText: {
     fontSize: 14,
     color: '#262631',
-  },
-  socialContainer: {
-    alignItems: 'center',
+    textAlign: 'center',
   },
 });

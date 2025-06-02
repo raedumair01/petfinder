@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image, Platform, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import BottomNavbar from '../components/BottomNavbar';
-import { mockAdoptionPets } from '../data/mockData';
-if (!mockAdoptionPets) mockAdoptionPets = [];
 
 export default function PetAdoptionForm({ user, setUser }) {
   const navigation = useNavigation();
@@ -15,6 +13,38 @@ export default function PetAdoptionForm({ user, setUser }) {
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [tempUserId, setTempUserId] = useState(1);
+
+  // Fetch existing pet adoption data when the screen loads
+  useEffect(() => {
+    const fetchPetData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/PetAdoptionForm', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Assuming the API returns an object with pet data
+        if (data && data.name) {
+          setName(data.name || '');
+          setType(data.type || '');
+          setBreed(data.breed || '');
+          setAge(data.age ? String(data.age) : '');
+          setDescription(data.description || '');
+          setImageUrl(data.image || '');
+        }
+      } catch (error) {
+        console.error('Error fetching pet data:', error.message);
+        Alert.alert('Error', `Failed to load pet data: ${error.message}. If using an emulator/device, replace 127.0.0.1 with your host IP (e.g., 192.168.1.x).`);
+      }
+    };
+
+    fetchPetData();
+  }, []);
 
   const pickImage = () => {
     const options = {
@@ -40,7 +70,7 @@ export default function PetAdoptionForm({ user, setUser }) {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !type || !breed || !age || !description) {
       Alert.alert('Validation Error', 'Please fill in all fields before submitting.', [
         { text: 'OK', style: 'cancel' },
@@ -55,7 +85,6 @@ export default function PetAdoptionForm({ user, setUser }) {
     const userIdToUse = user && user.id ? user.id : tempUserId;
 
     const newPet = {
-      id: mockAdoptionPets.length + 1,
       userId: userIdToUse,
       name,
       type,
@@ -65,22 +94,40 @@ export default function PetAdoptionForm({ user, setUser }) {
       image: imageUrl || 'https://images.unsplash.com/photo-1561037404-61cd46aa615b',
       adoptionStatus: 'available',
     };
-    mockAdoptionPets.push(newPet);
 
-    Alert.alert('Success', 'Pet listed for adoption successfully!');
-    //   { text: 'OK', onPress: () => navigation.goBack() },
-    // ]);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/PetAdoptionForm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPet),
+      });
 
-    if (!user || !user.id) {
-      setTempUserId(tempUserId + 1);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      Alert.alert('Success', 'Pet listed for adoption successfully!', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+
+      if (!user || !user.id) {
+        setTempUserId(tempUserId + 1);
+      }
+
+      // Reset form
+      setName('');
+      setType('');
+      setBreed('');
+      setAge('');
+      setDescription('');
+      setImageUrl('');
+    } catch (error) {
+      console.error('Error submitting pet form:', error.message);
+      Alert.alert('Error', `Failed to submit the form: ${error.message}. If using an emulator/device, replace 127.0.0.1 with your host IP (e.g., 192.168.1.x).`);
     }
-
-    setName('');
-    setType('');
-    setBreed('');
-    setAge('');
-    setDescription('');
-    setImageUrl('');
   };
 
   const handleAdoptionList = () => {
@@ -178,7 +225,7 @@ export default function PetAdoptionForm({ user, setUser }) {
             <Text style={styles.buttonText}>Adoption Procedure</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.spacer} /> {/* Increased spacer to allow more scrollable space */}
+        <View style={styles.spacer} />
       </ScrollView>
       <BottomNavbar setUser={setUser} />
     </View>
@@ -199,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8F2',
   },
   contentContainer: {
-    paddingBottom: 60, // Increased padding to allow more scrollable space
+    paddingBottom: 60,
   },
   title: {
     fontSize: 26,
@@ -283,7 +330,7 @@ const styles = StyleSheet.create({
   adoptionProcedureButton: {
     width: '100%',
     height: 50,
-    backgroundColor: '#4CAF50', // Green color for differentiation
+    backgroundColor: '#4CAF50',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -295,6 +342,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   spacer: {
-    height: 20, // Increased spacer height for more scrollable space
+    height: 20,
   },
 });

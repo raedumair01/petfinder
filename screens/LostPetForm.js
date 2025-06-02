@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Modal, FlatList, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Modal, FlatList, Alert, Platform, PermissionsAndroid } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import Geolocation from 'react-native-geolocation-service';
 
 export default function LostPetFormScreen() {
   const navigation = useNavigation();
@@ -11,12 +12,14 @@ export default function LostPetFormScreen() {
     message: '',
     petType: '',
     petSex: '',
-    dateMissing: new Date(), // Default to today (May 23, 2025)
+    dateMissing: new Date(), // Default to today (June 03, 2025, 12:35 AM PKT)
     petImage: null,
-    additionalDetails: '', // Separate field for Step 3
-    address: '', // Separate field for Step 3
-    phone: '', // Separate field for Step 4
-    email: '', // Separate field for Step 4
+    additionalDetails: '',
+    address: '',
+    phone: '',
+    email: '',
+    latitude: null,
+    longitude: null,
   });
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState(''); // 'petType', 'petSex', or 'date'
@@ -24,10 +27,80 @@ export default function LostPetFormScreen() {
   const petTypes = ['Dog', 'Cat', 'Bird', 'Other'];
   const petSexes = ['Male', 'Female', 'Unknown'];
 
+  // Request location permission for Android
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      console.log('Initial permission check:', granted ? 'Granted' : 'Denied');
+      if (granted) {
+        console.log('Location permission already granted');
+        return true;
+      }
+      try {
+        const result = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'This app needs access to your location to mark where your pet was lost.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        console.log('Permission request result:', result);
+        if (result === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Location permission granted');
+          return true;
+        } else {
+          console.log('Location permission denied');
+          Alert.alert(
+            'Permission Denied',
+            'Location access is required to fetch your current location. Please grant permission in settings or tap "Get Current Location" again.',
+            [
+              { text: 'OK' },
+              { text: 'Open Settings', onPress: () => PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION) },
+            ]
+          );
+          return false;
+        }
+      } catch (err) {
+        console.warn('Permission request error:', err);
+        Alert.alert('Error', 'Failed to request location permission. Please check settings.');
+        return false;
+      }
+    }
+    return true; // For iOS, permission is handled via Info.plist
+  };
+
+  // Fetch current location
+  const getCurrentLocation = async () => {
+    console.log('Attempting to get current location...');
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      console.log('Location permission not granted, aborting location fetch');
+      return;
+    }
+
+    console.log('Fetching location with permission granted');
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setFormData({ ...formData, latitude, longitude });
+        console.log('Location fetched:', latitude, longitude);
+        Alert.alert('Success', `Location fetched: (${latitude}, ${longitude})`);
+      },
+      (error) => {
+        console.error('Location Error:', error.message, error.code);
+        Alert.alert('Error', `Unable to fetch location: ${error.message}. Ensure location services are enabled.`);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
   // Generate date options (last year to today)
   const generateDateOptions = () => {
     const dates = [];
-    const today = new Date('2025-05-23'); // Current date based on system (11:45 PM PKT)
+    const today = new Date('2025-06-03T00:35:00+05:00'); // Current date and time (PKT)
     for (let i = 0; i <= 365; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
@@ -42,6 +115,45 @@ export default function LostPetFormScreen() {
     return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
   };
 
+  // Fetch data from the FastAPI backend when the screen loads
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/LostPetFormScreen', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data) {
+          setFormData({
+            petName: data.petName || '',
+            message: data.message || '',
+            petType: data.petType || '',
+            petSex: data.petSex || '',
+            dateMissing: data.dateMissing ? new Date(data.dateMissing) : new Date(),
+            petImage: data.petImage ? { uri: data.petImage } : null,
+            additionalDetails: data.additionalDetails || '',
+            address: data.address || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            latitude: data.latitude || null,
+            longitude: data.longitude || null,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error.message);
+        Alert.alert('Error', `Failed to load data: ${error.message}. If using an emulator/device, replace 127.0.0.1 with your host IP (e.g., 192.168.1.x).`);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleSelectOption = (value) => {
     if (modalType === 'petType') {
       setFormData({ ...formData, petType: value });
@@ -54,6 +166,7 @@ export default function LostPetFormScreen() {
   };
 
   const handleImagePick = () => {
+    console.log('Opening image picker...');
     Alert.alert(
       'Select Image',
       'Choose an option',
@@ -77,12 +190,46 @@ export default function LostPetFormScreen() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < 4) {
       setStep(step + 1);
     } else {
-      // Submit the form (for now, just navigate back)
-      navigation.goBack();
+      // Submit the form data to the FastAPI backend
+      try {
+        const payload = {
+          petName: formData.petName,
+          message: formData.message,
+          petType: formData.petType,
+          petSex: formData.petSex,
+          dateMissing: formatDate(formData.dateMissing),
+          petImage: formData.petImage ? formData.petImage.uri : null,
+          additionalDetails: formData.additionalDetails,
+          address: formData.address,
+          phone: formData.phone,
+          email: formData.email,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+        };
+
+        const response = await fetch('http://127.0.0.1:8000/LostPetFormScreen', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        Alert.alert('Success', 'Lost pet form submitted successfully!');
+        navigation.goBack();
+      } catch (error) {
+        console.error('Error submitting form:', error.message);
+        Alert.alert('Error', `Failed to submit the form: ${error.message}. If using an emulator/device, replace 127.0.0.1 with your host IP (e.g., 192.168.1.x).`);
+      }
     }
   };
 
@@ -188,6 +335,17 @@ export default function LostPetFormScreen() {
               value={formData.address}
               onChangeText={(text) => setFormData({ ...formData, address: text })}
             />
+            <Text style={styles.label}>Coordinates (Optional)</Text>
+            <TouchableOpacity style={styles.locationButton} onPress={getCurrentLocation}>
+              <Text style={styles.locationButtonText}>Get Current Location</Text>
+            </TouchableOpacity>
+            {formData.latitude && formData.longitude ? (
+              <Text style={styles.coordinatesText}>
+                Latitude: {formData.latitude}, Longitude: {formData.longitude}
+              </Text>
+            ) : (
+              <Text style={styles.coordinatesText}>No coordinates selected.</Text>
+            )}
           </View>
         );
       case 4:
@@ -273,7 +431,7 @@ export default function LostPetFormScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#FFFBFA', // Warm off-white background
+    backgroundColor: '#FFFBFA',
     padding: 20,
   },
   header: {
@@ -284,20 +442,20 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 24,
-    color: '#B85B2F', // Terracotta
+    color: '#B85B2F',
   },
   stepIndicator: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#2B3334', // Dark teal
+    color: '#2B3334',
   },
   homeButton: {
     fontSize: 24,
-    color: '#B85B2F', // Terracotta
+    color: '#B85B2F',
   },
   instruction: {
     fontSize: 14,
-    color: '#2B3334', // Dark teal
+    color: '#2B3334',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -307,7 +465,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#2B3334', // Dark teal
+    color: '#2B3334',
     marginBottom: 5,
     marginTop: 10,
   },
@@ -384,10 +542,28 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
   },
+  locationButton: {
+    height: 48,
+    backgroundColor: '#E8B4A5',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  locationButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  coordinatesText: {
+    fontSize: 14,
+    color: '#2B3334',
+    marginBottom: 15,
+  },
   continueButton: {
     width: '100%',
     height: 52,
-    backgroundColor: '#B85B2F', // Terracotta
+    backgroundColor: '#B85B2F',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
