@@ -12,6 +12,9 @@ import AdoptionListScreen from './screens/AdoptionListScreen';
 import AdoptionProcedureScreen from './screens/AdoptionProcedureScreen';
 import EducationalResourcesScreen from './screens/EducationalResourcesScreen';
 import HomeScreen from './screens/HomeScreen';
+import FoundPetForm from './screens/FoundPet';
+import SocialShareScreen from './screens/SocialShareScreen';
+import AIRecognitionScreen from './screens/AIRecog';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,11 +32,9 @@ function App(): React.JSX.Element {
         <Stack.Screen name="adoptpro" component={AdoptionProcedureScreen} />
         <Stack.Screen name="education" component={EducationalResourcesScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
-
-
-
-
-
+        <Stack.Screen name="Found Pet" component={FoundPetForm} />
+        <Stack.Screen name="Social" component={SocialShareScreen} />
+        <Stack.Screen name="Ai" component={AIRecognitionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -10,6 +10,13 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const [location, setLocation] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [taglineIndex, setTaglineIndex] = useState(0);
+
+  const taglines = [
+    'Lost a pet? Our AI can help!',
+    'Identify breeds in seconds!',
+    'Find matches for lost pets instantly!',
+  ];
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -39,6 +46,12 @@ export default function HomeScreen() {
     };
 
     requestLocationPermission();
+
+    // Rotate taglines every 3 seconds
+    const interval = setInterval(() => {
+      setTaglineIndex((prev) => (prev + 1) % taglines.length);
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const getLocation = () => {
@@ -110,11 +123,20 @@ export default function HomeScreen() {
         <Text style={styles.petDetail}>Age: {item.age}</Text>
         <Text style={styles.petDetail}>Location: {item.location}</Text>
         <Text style={styles.petDetail}>Posted: {item.days}</Text>
-        <TouchableOpacity style={styles.button}
-          onPress={() => navigation.navigate('adoptpro', { pet: item })}
-        >
-          <Text style={styles.buttonText}>Adopt Now</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.adoptButton]}
+            onPress={() => navigation.navigate('adoptpro', { pet: item })}
+          >
+            <Text style={styles.buttonText}>Adopt Now</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.shareButton]}
+            onPress={() => navigation.navigate('Social', { pet: item })}
+          >
+            <Text style={styles.buttonText}>Share</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -150,6 +172,23 @@ export default function HomeScreen() {
           />
         </View>
 
+        {/* AI Recognition Section */}
+        <TouchableOpacity
+          style={styles.aiSection}
+          onPress={() => navigation.navigate('Ai')}
+        >
+          <View style={styles.aiCard}>
+            <View style={styles.aiIconContainer}>
+              <Text style={styles.aiIcon}>📸🐾</Text>
+            </View>
+            <Text style={styles.aiTitle}>Identify a Lost Pet Through Ai Recognition</Text>
+            <Text style={styles.aiTagline}>{taglines[taglineIndex]}</Text>
+            <TouchableOpacity style={styles.aiLearnMore}>
+              <Text style={styles.aiLearnMoreText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+
         {/* Featured Pets Section */}
         <View style={styles.featuredPetsSection}>
           <Text style={styles.sectionTitle}>Featured Pets for Adoption</Text>
@@ -173,7 +212,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.featuredList}
           />
         </View>
-        <View style={styles.spacer} /> {/* Spacer for more scrollable space */}
+        <View style={styles.spacer} />
       </ScrollView>
       <BottomNavbar navigation={navigation} />
     </View>
@@ -183,24 +222,24 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F5F5F5', // Light gray background
+    backgroundColor: '#F5F5F5',
   },
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
   contentContainer: {
-    paddingBottom: 60, // Ensures more scrollable space
+    paddingBottom: 80,
   },
   welcomeHeader: {
     padding: 16,
-    backgroundColor: '#8B4513', // Unified brown
-    marginBottom: 10, // Space between header and search bar
+    backgroundColor: '#8B4513',
+    marginBottom: 10,
   },
   welcomeText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFFFFF', // White for contrast
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   searchBar: {
@@ -209,20 +248,68 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     padding: 5,
     borderWidth: 2,
-    borderColor: '#8B4513', // Unified brown border
-    borderRadius: 16, // Increased border radius for a smoother look
-    backgroundColor: '#FFF0F5', // Lavender Blush
+    borderColor: '#8B4513',
+    borderRadius: 16,
+    backgroundColor: '#FFF0F5',
     marginBottom: 10,
   },
   locationIcon: {
     fontSize: 20,
     marginRight: 10,
-    color: '#8B4513', // Unified brown for icon
+    color: '#8B4513',
   },
   searchInput: {
     flex: 1,
     fontSize: 13,
     color: '#2B3334',
+  },
+  aiSection: {
+    paddingHorizontal: 16,
+    marginVertical: 10,
+  },
+  aiCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#8B4513',
+    shadowColor: '#2B3334',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: 'center',
+  },
+  aiIconContainer: {
+    backgroundColor: '#2E8B57',
+    borderRadius: 50,
+    padding: 10,
+    marginBottom: 12,
+  },
+  aiIcon: {
+    fontSize: 30,
+    color: '#FFFFFF',
+  },
+  aiTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2B3334',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  aiTagline: {
+    fontSize: 14,
+    color: '#485456',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  aiLearnMore: {
+    padding: 8,
+  },
+  aiLearnMoreText: {
+    fontSize: 12,
+    color: '#8B4513',
+    fontWeight: '500',
   },
   featuredPetsSection: {
     paddingHorizontal: 16,
@@ -231,7 +318,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E8B57', // Sea Green
+    color: '#2E8B57',
     marginBottom: 8,
   },
   petCard: {
@@ -241,7 +328,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#8B4513', // Unified brown border
+    borderColor: '#8B4513',
     shadowColor: '#2B3334',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -251,7 +338,7 @@ const styles = StyleSheet.create({
   petImage: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: 5,
     marginBottom: 12,
   },
   petInfo: {
@@ -274,15 +361,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 20,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
   button: {
-    width: '50%',
     height: 40,
-    backgroundColor: '#8B4513', // Unified brown for button
+    backgroundColor: '#8B4513',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  adoptButton: {
+    flex: 1,
+    marginRight: 5,
+  },
+  shareButton: {
+    flex: 1,
+    marginLeft: 5,
+    backgroundColor: '#2E8B57',
   },
   buttonText: {
     fontSize: 14,
@@ -297,25 +396,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   featuredCard: {
-    backgroundColor: '#E6E6FA', // Lavender
+    backgroundColor: '#E6E6FA',
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#8B4513', // Unified brown border
+    borderColor: '#8B4513',
     width: width - 32,
     marginRight: 10,
   },
   featuredText: {
-    color: '#483D8B', // Dark Slate Blue
+    color: '#483D8B',
     fontSize: 16,
   },
   featuredLink: {
-    color: '#8B4513', // Unified brown for link
+    color: '#8B4513',
     fontSize: 14,
     marginTop: 8,
     fontWeight: 'bold',
   },
   spacer: {
-    height: 0, // Spacer to ensure more scrollable space
+    height: 20,
   },
 });
