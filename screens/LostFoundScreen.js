@@ -79,7 +79,7 @@ export default function LostFoundScreen({ setUser }) {
         {/* Report Lost Pet Button */}
         <TouchableOpacity
           style={[styles.button, { backgroundColor: '#FAAD14' }]}
-          onPress={() => navigation.navigate('LostPetForm')}
+          onPress={() => navigation.navigate('LostForm')}
         >
           <Text style={styles.buttonText}>Report Lost Pet</Text>
         </TouchableOpacity>
